@@ -1,12 +1,16 @@
 class ArticlesController < ApplicationController
-  before_action :require_user #, except: [:index, :show]
+  before_action :require_user, except: [:index, :show]
   before_action :set_article, only: [:show, :edit, :update, :destroy]
   before_action :require_same_user, only: [:destroy]
   before_action :require_same_or_admin_user, only: [:edit, :update]
 
   def index
-    @articles = Article.where(user_id: current_user.followings).paginate(page: params[:page], per_page: 5)
-    @total_articles = Article.where(user_id: current_user.followings).count
+    puts params
+    # current_user ||= User.find(params[:user_id]) if params[:user_id]
+    # @articles = Article.where(user_id: current_user.followings).paginate(page: params[:page], per_page: 5)
+    # @total_articles = Article.where(user_id: current_user.followings).count
+    @articles = Article.all
+    render json: @articles
   end
 
   def show
