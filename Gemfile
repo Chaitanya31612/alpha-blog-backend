@@ -69,3 +69,5 @@ gem "activeadmin", "~> 2.13"
 gem "devise", "~> 4.9"
 
 gem "pg", "~> 1.4"
+
+gem "rack-cors", "~> 2.0"
