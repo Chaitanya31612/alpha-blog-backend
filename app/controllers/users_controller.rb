@@ -1,11 +1,21 @@
 class UsersController < ApplicationController
-  before_action :require_user, except: [:new, :create ] #, only: [:index, :show, :edit, :update, :destroy]
-  before_action :set_user, only: [:show, :edit, :update, :destroy]
-  before_action :require_same_user, only: [:edit, :update, :destroy]
-  before_action :set_follow_user, only: [:follow, :unfollow]
+  before_action :authenticate_user
+  before_action :set_user, only: %i[show edit update destroy]
+  before_action :require_same_user, only: %i[edit update destroy]
+  before_action :set_follow_user, only: %i[follow unfollow]
 
   def index
-    @users = User.paginate(page: params[:page], per_page: 6)
+    # @users = User.paginate(page: params[:page], per_page: 6)
+    @users = User.all.map do |user|
+      user.attributes.merge(
+        {
+          followingsCount: user.followings.count,
+          followersCount: user.followers.count,
+          articlesCount: user.articles.count,
+        }
+      ).except('password_digest')
+    end
+    render json: @users
   end
 
   def show
@@ -18,7 +28,6 @@ class UsersController < ApplicationController
   end
 
   def edit
-
   end
 
   def update
@@ -67,6 +76,11 @@ class UsersController < ApplicationController
     end
   end
 
+  # /GET /users/top
+  def top_users
+    @top_users = User.all.sort_by { |c| c.articles.count }.reverse[0..2]
+    render json: @top_users
+  end
 
   private
 
@@ -83,9 +97,9 @@ class UsersController < ApplicationController
   end
 
   def require_same_user
-    unless @user == current_user
-      flash[:alert_fail] = 'You are not allowed to perform this action!'
-      redirect_to @user
-    end
+    return if @user == current_user
+
+    flash[:alert_fail] = 'You are not allowed to perform this action!'
+    redirect_to @user
   end
 end

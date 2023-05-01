@@ -1,5 +1,7 @@
 class ApplicationController < ActionController::Base
-  helper_method :current_user, :logged_in?
+  include JwtToken
+
+  helper_method :current_user, :logged_in?, :authenticate_user
 
   def current_user
     # memoized current_user, if available it will return directly
@@ -11,9 +13,24 @@ class ApplicationController < ActionController::Base
   end
 
   def require_user
-    unless logged_in?
-      flash[:alert_fail] = 'You are not allowed to perform this action!'
-      redirect_to login_path
+    # byebug
+    return if logged_in?
+
+    flash[:alert_fail] = 'You are not allowed to perform this action!'
+    render json: { errors: 'You are not allowed to perform this action!' }, status: :unauthorized
+  end
+
+  def authenticate_user
+    header = request.headers['Authorization']
+    header = header.split(' ').last if header
+    # byebug
+    begin
+      @decoded = JwtToken.decode(header)
+      @current_user = User.find(@decoded[:user_id])
+    rescue ActiveRecord::RecordNotFound => e
+      render json: { errors: e.message }, status: :unauthorized
+    rescue JWT::DecodeError => e
+      render json: { errors: e.message }, status: :unauthorized
     end
   end
 end

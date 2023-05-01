@@ -1,7 +1,7 @@
 class CategoriesController < ApplicationController
-  before_action :require_user
-  before_action :set_category, only: [:show, :edit, :update, :destroy]
-  before_action :require_admin, except: [:index, :show]
+  before_action :authenticate_user
+  before_action :set_category, only: %i[show edit update destroy]
+  # before_action :require_admin, except: %i[index show]
 
   def new
     @category = Category.new
@@ -18,7 +18,15 @@ class CategoriesController < ApplicationController
   end
 
   def index
-    @categories = Category.paginate(page: params[:page], per_page: 6)
+    # @categories = Category.paginate(page: params[:page], per_page: 6)
+    @categories = Category.all.map do |category|
+      category.attributes.merge(
+        {
+          articlesCount: category.articles.count
+        }
+      )
+    end
+    render json: @categories
   end
 
   def show
@@ -27,7 +35,6 @@ class CategoriesController < ApplicationController
   end
 
   def edit
-
   end
 
   def update
@@ -41,8 +48,13 @@ class CategoriesController < ApplicationController
 
   def destroy
     @category.destroy
-    flash[:notice] = "Category deleted successfully!"
+    flash[:notice] = 'Category deleted successfully!'
     redirect_to categories_path
+  end
+
+  def top_categories
+    @top_categories = Category.all.sort_by { |c| c.articles.count }.reverse[0..4]
+    render json: @top_categories
   end
 
   private
@@ -56,16 +68,16 @@ class CategoriesController < ApplicationController
   end
 
   def require_user
-    unless logged_in?
-      flash[:alert_fail] = 'You are not allowed to perform this action!'
-      redirect_to login_path
-    end
+    return if logged_in?
+
+    flash[:alert_fail] = 'You are not allowed to perform this action!'
+    redirect_to login_path
   end
 
   def require_admin
-    unless logged_in? and current_user.admin?
-      flash[:alert_fail] = 'This action can only be performed by admin'
-      redirect_to categories_path
-    end
+    return if logged_in? and current_user.admin?
+
+    flash[:alert_fail] = 'This action can only be performed by admin'
+    redirect_to categories_path
   end
 end
