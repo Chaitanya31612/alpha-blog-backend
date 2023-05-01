@@ -30,8 +30,23 @@ class CategoriesController < ApplicationController
   end
 
   def show
-    @articles = @category.articles.paginate(page: params[:page], per_page: 5)
-    @total_articles = @category.articles.count
+    @category = Category.find(params[:id])
+    @articles = @category.articles.map do |article|
+      article.attributes.merge(
+        {
+          categories: article.categories,
+          user: {
+            id: article.user.id,
+            username: article.user.username,
+            email: article.user.email
+          }
+        }
+      ).except('password_digest')
+    end
+    @users_count = @category.articles.select('distinct(user_id)').count
+    render json: { category: @category, articles: @articles, usersCount: @users_count }
+    # @articles = @category.articles.paginate(page: params[:page], per_page: 5)
+    # @total_articles = @category.articles.count
   end
 
   def edit
