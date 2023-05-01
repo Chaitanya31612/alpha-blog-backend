@@ -19,8 +19,30 @@ class UsersController < ApplicationController
   end
 
   def show
-    @articles = @user.articles.paginate(page: params[:page], per_page: 5)
-    @total_articles = @user.articles.length
+    # @articles = @user.articles.paginate(page: params[:page], per_page: 5)
+    # @total_articles = @user.articles.length
+    @articles = @user.articles.map do |article|
+      article.attributes.merge(
+        {
+          categories: article.categories,
+          user: {
+            id: article.user.id,
+            username: article.user.username,
+            email: article.user.email
+          }
+        }
+      ).except('password_digest')
+    end
+
+    @followings = @user.followings.map do |following|
+      following.attributes.except('password_digest')
+    end
+
+    @followers = @user.followers.map do |follower|
+      follower.attributes.except('password_digest')
+    end
+
+    render json: { user: @user, articles: @articles, followings: @followings, followers: @followers }
   end
 
   def new
