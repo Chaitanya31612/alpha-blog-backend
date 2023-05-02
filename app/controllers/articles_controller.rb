@@ -28,7 +28,11 @@ class ArticlesController < ApplicationController
   end
 
   def show
-    @id_param = params[:id]
+    @article = Article.find(params[:id]).attributes.merge(
+      categories: @article.categories,
+      user: @article.user.attributes.except('password_digest')
+    )
+    render json: @article
   end
 
   def new
@@ -91,6 +95,9 @@ class ArticlesController < ApplicationController
         }
       ).except('password_digest')
     end
+
+    return render json: @featured_articles[0..params[:limit].to_i - 1] if params[:limit]
+
     render json: @featured_articles
   end
 
