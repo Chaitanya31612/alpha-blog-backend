@@ -1,9 +1,13 @@
 class ArticlesController < ApplicationController
   # before_action :require_user, except: %i[index show]
-  before_action :authenticate_user, except: [:featured_articles]
+  before_action :authenticate_user
   before_action :set_article, only: %i[show edit update destroy]
   before_action :require_same_user, only: [:destroy]
   before_action :require_same_or_admin_user, only: %i[edit update]
+
+  # ?BOTH of these prevent CSRF attacks
+  # skip_before_action :verify_authenticity_token
+  protect_from_forgery with: :null_session
 
   def index
     # byebug
@@ -43,26 +47,25 @@ class ArticlesController < ApplicationController
   end
 
   def create
-    # this is strong param passing
     @article = Article.new(article_params)
-    @article.user = current_user
-    # render plain: @article
+    @article.user = @current_user
+    @article.categories << Category.find(params[:category_ids]) if params[:category_ids]
+
     if @article.save
-      flash[:notice] = 'Article was saved successfully'
-      redirect_to @article
+      render json: { message: 'Article Created Successfully', article: @article }
     else
-      # flash[:notice] = 'Error saving the article, Try again'
-      render 'new'
+      render json: { errors: @article.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
+    @article.categories = []
+    @article.categories << Category.find(params[:category_ids]) if params[:category_ids]
+
     if @article.update(article_params)
-      flash[:notice] = 'Article Updated Successfully'
-      redirect_to @article
+      render json: { message: 'Article Updated Successfully', article: @article }
     else
-      # flash[:notice] = "Error Updating Article"
-      render 'edit'
+      render json: { errors: @article.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
