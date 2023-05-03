@@ -9,12 +9,14 @@ Rails.application.routes.draw do
   # ============ AUTH =============#
   post '/auth/login', to: 'authentication#login'
   post '/auth/signup', to: 'authentication#signup'
+  post '/auth/update', to: 'authentication#update'
   get '/auth/me', to: 'authentication#get_current_user'
+  put 'users/:id', to: 'authentication#update'
 
   # ============ USERS ============#
   get 'signup', to: 'users#new'
   get 'users/top', to: "users#top_users"
-  resources :users, except: [:new]
+  resources :users, except: [:new, :update]
   post 'follow/:user_id', to: 'users#follow'
   post 'unfollow/:user_id', to: 'users#unfollow'
 

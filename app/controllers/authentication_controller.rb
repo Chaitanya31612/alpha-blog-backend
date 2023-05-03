@@ -26,6 +26,17 @@ class AuthenticationController < ApplicationController
     end
   end
 
+  def update
+    # byebug
+    authenticate_user
+
+    if @current_user.update(user_params)
+      render json: { message: 'User Updated Successfully', user: @current_user.attributes.except('password_digest') }
+    else
+      render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   def get_current_user
     authenticate_user
     render json: { user: @current_user.attributes.except('password_digest') }
