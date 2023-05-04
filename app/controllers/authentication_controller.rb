@@ -39,7 +39,29 @@ class AuthenticationController < ApplicationController
 
   def get_current_user
     authenticate_user
-    render json: { user: @current_user.attributes.except('password_digest') }
+
+    user = @current_user.attributes.merge(
+      articles: @current_user.articles.map do |article|
+        article.attributes.merge(
+          {
+            categories: article.categories,
+            user: {
+              id: article.user.id,
+              username: article.user.username,
+              email: article.user.email
+            }
+          }
+        )
+      end,
+      followings: @current_user.followings.map do |following|
+        following.attributes.except('password_digest')
+      end,
+      followers: @current_user.followers.map do |follower|
+        follower.attributes.except('password_digest')
+      end
+    ).except('password_digest')
+
+    render json: { user: user }
   end
 
   private

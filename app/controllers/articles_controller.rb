@@ -2,8 +2,8 @@ class ArticlesController < ApplicationController
   # before_action :require_user, except: %i[index show]
   before_action :authenticate_user
   before_action :set_article, only: %i[show edit update destroy]
-  before_action :require_same_user, only: [:destroy]
-  before_action :require_same_or_admin_user, only: %i[edit update]
+  # after_action :require_same_user
+  # before_action :require_same_or_admin_user, only: %i[edit update]
 
   # ?BOTH of these prevent CSRF attacks
   # skip_before_action :verify_authenticity_token
@@ -71,7 +71,8 @@ class ArticlesController < ApplicationController
 
   def destroy
     @article.destroy
-    redirect_to articles_path
+
+    render json: { message: 'Article Deleted Successfully' }
   end
 
   def upvote
@@ -115,10 +116,9 @@ class ArticlesController < ApplicationController
   end
 
   def require_same_user
-    return if @article.user == current_user
+    return if @article.user == @current_user
 
-    flash[:alert_fail] = 'You are not allowed to perform this action!'
-    redirect_to @article
+    render json: { message: 'You are not allowed to perform this action!' }, status: :unauthorized
   end
 
   def require_same_or_admin_user

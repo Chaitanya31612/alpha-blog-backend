@@ -4,6 +4,10 @@ class UsersController < ApplicationController
   before_action :require_same_user, only: %i[edit update destroy]
   before_action :set_follow_user, only: %i[follow unfollow]
 
+  # TODO implement csrf protection
+  protect_from_forgery with: :null_session, only: [:follow, :unfollow]
+
+
   def index
     # @users = User.paginate(page: params[:page], per_page: 6)
     @users = User.all.map do |user|
@@ -80,19 +84,29 @@ class UsersController < ApplicationController
 
   def follow
     if @follow_user
-      current_user.follow(@follow_user)
-      redirect_back fallback_location: users_path
+      @current_user.follow(@follow_user)
+
+      followings = @current_user.followings.map do |following|
+        following.attributes.except('password_digest')
+      end
+
+      render json: { message: 'Followed Successfully', followings: followings }
     else
-      redirect_back fallback_location: users_path
+      render json: { errors: 'User not found' }, status: :unprocessable_entity
     end
   end
 
   def unfollow
     if @follow_user
-      current_user.unfollow(@follow_user)
-      redirect_back fallback_location: users_path
+      @current_user.unfollow(@follow_user)
+
+      followings = @current_user.followings.map do |following|
+        following.attributes.except('password_digest')
+      end
+
+      render json: { message: 'Unfollowed Successfully', followings: followings }
     else
-      redirect_back fallback_location: users_path
+      render json: { errors: 'User not found' }, status: :unprocessable_entity
     end
   end
 
