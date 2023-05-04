@@ -80,9 +80,10 @@ class ArticlesController < ApplicationController
     if article
       article.upvote
       article.save
-      redirect_back fallback_location: articles_path
+
+      render json: { message: 'Article Upvoted Successfully', article: article }
     else
-      redirect_back fallback_location: articles_path
+      render json: { errors: 'Article Not Found' }, status: :not_found
     end
   end
 
