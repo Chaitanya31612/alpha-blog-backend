@@ -10,7 +10,7 @@ class AuthenticationController < ApplicationController
     if @user&.authenticate(params[:password])
       puts "user #{@user.username}"
       token = JwtToken.encode(user_id: @user.id)
-      render json: { token:, user: @user.attributes.except('password_digest') }, status: :ok
+      render json: { token: token, csrf_token: form_authenticity_token, user: @user.attributes.except('password_digest') }, status: :ok
     else
       render json: { message: 'Invalid login credentials' }, status: :unauthorized
     end
@@ -61,7 +61,7 @@ class AuthenticationController < ApplicationController
       end
     ).except('password_digest')
 
-    render json: { user: user }
+    render json: { user: user, csrf_token: form_authenticity_token }
   end
 
   private

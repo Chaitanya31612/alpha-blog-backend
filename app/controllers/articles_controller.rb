@@ -4,6 +4,7 @@ class ArticlesController < ApplicationController
   before_action :set_article, only: %i[show edit update destroy]
   # after_action :require_same_user
   # before_action :require_same_or_admin_user, only: %i[edit update]
+  # protect_from_forgery with: :exception
 
   # ?BOTH of these prevent CSRF attacks
   # skip_before_action :verify_authenticity_token

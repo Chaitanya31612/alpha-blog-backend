@@ -1,5 +1,7 @@
 class ApplicationController < ActionController::Base
   include JwtToken
+  include ActionController::Cookies
+  after_action :set_csrf_cookie
 
   helper_method :current_user, :logged_in?, :authenticate_user
 
@@ -32,5 +34,14 @@ class ApplicationController < ActionController::Base
     rescue JWT::DecodeError => e
       render json: { errors: e.message }, status: :unauthorized
     end
+  end
+
+  private
+
+  def set_csrf_cookie
+    # puts "auth #{form_authenticity_token}"
+    # cookies["CSRF-TOKEN"] = {
+    #   value: form_authenticity_token
+    # }
   end
 end
