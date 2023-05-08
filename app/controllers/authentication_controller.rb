@@ -27,13 +27,11 @@ class AuthenticationController < ApplicationController
   end
 
   def update
-    # byebug
     authenticate_user
-
-    if @current_user.update(user_params)
+    if @current_user.authenticate(params[:password]) && @current_user.update(user_params)
       render json: { message: 'User Updated Successfully', user: @current_user.attributes.except('password_digest') }
     else
-      render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
+      render json: { message: 'Unable to update profile' }, status: :unprocessable_entity
     end
   end
 

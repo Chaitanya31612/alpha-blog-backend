@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
   before_action :authenticate_user
   before_action :set_user, only: %i[show edit update destroy]
-  before_action :require_same_user, only: %i[edit update destroy]
+  # before_action :require_same_user, only: %i[edit update destroy]
   before_action :set_follow_user, only: %i[follow unfollow]
 
   # TODO implement csrf protection
@@ -76,10 +76,9 @@ class UsersController < ApplicationController
   end
 
   def destroy
+    # byebug
     @user.destroy
-    session[:user_id] = nil if @user == current_user
-    flash[:notice] = 'Account has been deleted successfully!'
-    redirect_to root_path
+    render json: { message: 'User deleted successfully' }
   end
 
   def follow
