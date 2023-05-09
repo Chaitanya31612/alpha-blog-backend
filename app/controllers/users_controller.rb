@@ -76,9 +76,12 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    # byebug
-    @user.destroy
-    render json: { message: 'User deleted successfully' }
+    byebug
+    if @current_user.authenticate(params[:password]) && @current_user.destroy
+      render json: { message: 'User deleted successfully' }
+    else
+      render json: { message: 'Unable to delete user' }, status: :unprocessable_entity
+    end
   end
 
   def follow
