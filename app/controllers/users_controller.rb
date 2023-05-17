@@ -76,7 +76,7 @@ class UsersController < ApplicationController
   end
 
   def destroy
-    byebug
+    # byebug
     if @current_user.authenticate(params[:password]) && @current_user.destroy
       render json: { message: 'User deleted successfully' }
     else
